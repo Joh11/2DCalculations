@@ -9,7 +9,8 @@ from sheet import Sheet
 # -----------------------------------------------------------------------------
 
 supercell_lattice = ...
-theta = ...
+m = 7
+theta = np.arccos((3 * m**2 + 3 * m + 1/2) / (3 * m**2 + 3 * m + 1))
 
 # -----------------------------------------------------------------------------
 # Beginning of the script
@@ -19,14 +20,14 @@ theta = ...
 N = 15
 
 a = 2.46
-a1 = np.array([sqrt(3) / 2 * a, 1/2, 0])
-a2 = np.array([sqrt(3) / 2 * a, -1/2, 0])
+a1 = np.array([a, 0, 0])
+a2 = np.array([a/2, sqrt(3)/2 * a, 0])
 a3 = np.array([0, 0, 1])
 
 sites_A = np.array([0   * a1 + 0   * a2,
-                    2/3 * a1 + 2/3 * a2])
+                    1/3 * a1 + 1/3 * a2])
 
-sites_B = np.array([1/3 * a1 + 1/3  * a2,
+sites_B = np.array([1/3 * a1 + 1/3 * a2,
                     2/3 * a1 + 2/3 * a2])
 
 s1 = Sheet([a1,a2,a3], ['C','C'], sites_A, [0], [-N,-N], [N,N], 'graphene')
