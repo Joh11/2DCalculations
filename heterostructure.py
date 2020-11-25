@@ -317,7 +317,7 @@ if __name__ == '__main__':
     #plt.hist(vals,bins=25)
     #plt.draw()
 
-    #print vals
+    #print(vals)
     '''
     #PLOTS THE ATOMS IN 3D SPACE
     
