@@ -114,7 +114,7 @@ class Heterostructure:
         print('Calculating interlayer H...')
         H = sparse.lil_matrix((sheet1.max_index,sheet2.max_index))
         
-        for k in xrange(sheet1.max_index):
+        for k in range(sheet1.max_index):
             
             grid_here = sheet1.indexToGrid(k)
             ih = grid_here[0]
@@ -147,9 +147,9 @@ class Heterostructure:
             
             ilay = Interlayer()
             
-            for i in xrange(max(0,i0 - searchsize), min(sheet2.max_shape[0] - sheet2.min_shape[0],i0 + searchsize)):
-                for j in xrange(max(0,j0 - searchsize), min(sheet2.max_shape[1] - sheet2.min_shape[1],j0 + searchsize)):
-                    for s in xrange(len(sheet2.atom_types)):
+            for i in range(max(0,i0 - searchsize), min(sheet2.max_shape[0] - sheet2.min_shape[0],i0 + searchsize)):
+                for j in range(max(0,j0 - searchsize), min(sheet2.max_shape[1] - sheet2.min_shape[1],j0 + searchsize)):
+                    for s in range(len(sheet2.atom_types)):
                         
                         new_grid = [i,j,s]
                         new_index = sheet2.gridToIndex(new_grid)
@@ -187,7 +187,7 @@ class Heterostructure:
         interH = []
         rows = []
         smax = len(self.sheets)
-        for s in xrange(smax):
+        for s in range(smax):
             intraH.append(self.sheets[s].intraHamiltonian(0))
             if s != smax - 1:
                 interH.append(self.interHamiltonian(s,s+1))
@@ -196,22 +196,22 @@ class Heterostructure:
                 row = []
                 row.append(intraH[s])
                 row.append(interH[s])
-                for i in xrange(s+2, smax):
+                for i in range(s+2, smax):
                     row.append(None)
             elif s == smax - 1:
                 row = []
-                for i in xrange(0, s - 1):
+                for i in range(0, s - 1):
                     row.append(None)
                 row.append(sparse.csr_matrix.transpose(interH[s-1]))
                 row.append(intraH[s])
             else:
                 row = []
-                for i in xrange(0,s-1):
+                for i in range(0,s-1):
                     row.append(None)
                 row.append(sparse.csr_matrix.transpose(interH[s-1]))
                 row.append(intraH[s])
                 row.append(interH[s])
-                for j in xrange(s+2,smax):
+                for j in range(s+2,smax):
                     row.append(None)
             
             rows.append(row)
@@ -229,8 +229,8 @@ class Heterostructure:
         
         val_arr = L.getVals()
         vals = []
-        for i in xrange(len(val_arr)):
-            for j in xrange(len(val_arr[i])):
+        for i in range(len(val_arr)):
+            for j in range(len(val_arr[i])):
                 vals.append(val_arr[i][j])
                 
         plt.hist(vals,bins=100)
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     pos_array_x = []
     pos_array_y = []
     pos_array_z = []
-    for k in xrange(k_max):
+    for k in range(k_max):
         pos_array_x.append(h.posAtomIndex(k)[0])
         pos_array_y.append(h.posAtomIndex(k)[1])
         pos_array_z.append(h.posAtomIndex(k)[2])

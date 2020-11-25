@@ -34,7 +34,7 @@ class Intralayer:
             t7 = -0.015
             t8 = -0.021
             
-            outarray = [(0,0,0,0) for y in xrange(0,39)]
+            outarray = [(0,0,0,0) for y in range(0,39)]
                 
             
             if s == 0:
