@@ -111,7 +111,7 @@ class Heterostructure:
         
         searchsize = 4
         
-        print 'Calculating interlayer H...'
+        print('Calculating interlayer H...')
         H = sparse.lil_matrix((sheet1.max_index,sheet2.max_index))
         
         for k in xrange(sheet1.max_index):
@@ -256,7 +256,7 @@ class Heterostructure:
             rows_fin = self.hUpdate(rows,0)
             H = sparse.bmat(rows_fin).tocsr() 
             vals, vecs = linalg.eigs(H,sigma=2, k=H.shape[0] - 2,which='LM',tol=0.001)
-            print "Eigen problem solved"
+            print("Eigen problem solved")
             L.addVals(vals)
             L.addVecs(vecs)
             

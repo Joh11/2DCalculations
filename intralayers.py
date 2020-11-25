@@ -201,8 +201,8 @@ class Intralayer:
 if __name__ == '__main__':
     ilay = Intralayer()
     energies = ilay.interaction('graphene',[15,15,0])
-    print len(energies)
-    print energies[17][0]
-    print energies[17][1]
-    print energies[17][2]
-    print energies[17][3]
+    print(len(energies))
+    print(energies[17][0])
+    print(energies[17][1])
+    print(energies[17][2])
+    print(energies[17][3])

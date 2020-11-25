@@ -44,23 +44,23 @@ class Sheet:
     # setup for the sheet's geometery and indexing
     def setIndex(self):
         
-        self.grid_array = [[[-1 for s in xrange(len(self.atom_types))] for j in xrange(self.min_shape[1],self.max_shape[1])] for i in xrange(self.min_shape[0],self.max_shape[0])]       
+        self.grid_array = [[[-1 for s in range(len(self.atom_types))] for j in range(self.min_shape[1],self.max_shape[1])] for i in range(self.min_shape[0],self.max_shape[0])]       
         k = 0
         
-        for i in xrange(self.max_shape[0] - self.min_shape[0]): 
-            for j in xrange(self.max_shape[1] - self.min_shape[1]):
-                for l in xrange(len(self.atom_types)):
+        for i in range(self.max_shape[0] - self.min_shape[0]): 
+            for j in range(self.max_shape[1] - self.min_shape[1]):
+                for l in range(len(self.atom_types)):
                     if self.checkShape(self.posAtomGrid([i,j,l])) == True:
                         self.grid_array[i][j][l] = k
                         k += 1
         
         self.max_index = k
         
-        self.index_array = [[0,0,0] for m in xrange(self.max_index)]
+        self.index_array = [[0,0,0] for m in range(self.max_index)]
         
-        for i in xrange(self.max_shape[0] - self.min_shape[0]): 
-            for j in xrange(self.max_shape[1] - self.min_shape[1]):
-                for l in xrange(len(self.atom_types)):
+        for i in range(self.max_shape[0] - self.min_shape[0]): 
+            for j in range(self.max_shape[1] - self.min_shape[1]):
+                for l in range(len(self.atom_types)):
                     k_here = self.grid_array[i][j][l]
                     if k_here != -1:
                         self.index_array[k_here] = [i,j,l]
@@ -119,16 +119,16 @@ class Sheet:
     
     #returns intralayer Hamiltonian (ie H_ii)
     def intraHamiltonian(self,type):
-        print 'Calculating intralayer H...'
+        print('Calculating intralayer H...')
         H = lil_matrix((self.max_index,self.max_index))
         
-        for k in xrange(self.max_index):
+        for k in range(self.max_index):
             
             grid_here = self.indexToGrid(k)
             ilay = Intralayer()
             energies = ilay.interaction(self.mat,grid_here)
             
-            for l in xrange(0,len(energies)):
+            for l in range(0,len(energies)):
                 i = energies[l][0]
                 j = energies[l][1]
                 s = energies[l][2]
@@ -154,20 +154,20 @@ if __name__ == '__main__':
         s = Sheet([[1,0,0],[0,1,0],[0,0,1]],['C','C'],[[0,0,0],[0.5,0.5,0]],[0],[-N,-N],[N,N],'graphene')
         
         H = s.intraHamiltonian(0)
-        print H.getnnz
+        print(H.getnnz)
         
         t_array[i] = time.time() - tic
         i += 1
         
     p = np.poly1d(np.polyfit(N_array,t_array,2))
     plt.plot(N_array,t_array,'b')
-    plt.plot(xrange(0,1000),p(xrange(0,1000)),'r')
+    plt.plot(range(0,1000),p(range(0,1000)),'r')
     
     '''
     k_max = s.max_index
     pos_array_x = []
     pos_array_y = []
-    for k in xrange(k_max):
+    for k in range(k_max):
         pos_array_x.append(s.posAtomIndex(k)[0])
         pos_array_y.append(s.posAtomIndex(k)[1])
         
