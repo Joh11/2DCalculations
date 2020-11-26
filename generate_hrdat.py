@@ -4,6 +4,7 @@ import pymatgen as mg
 from pymatgen.io.vasp import Poscar
 import scipy
 from collections import deque
+import sys
 
 from heterostructure import Heterostructure
 from sheet import Sheet
@@ -12,11 +13,13 @@ from sheet import Sheet
 # Input parameters
 # -----------------------------------------------------------------------------
 
-m = 7
+m = 7 if len(sys.argv) != 2 else sys.argv[1]
 
 # -----------------------------------------------------------------------------
 # Beginning of the script
 # -----------------------------------------------------------------------------
+
+print('Usage: ./generate_hrdat.py [m]')
 
 # Generate the heterostructure
 N = 50 # TODO choose a big enough N
@@ -116,7 +119,7 @@ assert(len(coords) == natoms)
 
 # Save the POSCAR
 struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords, coords_are_cartesian=True)
-Poscar(struct).write_file("test.vasp")
+Poscar(struct).write_file("m7-stcarr.vasp")
 
 # Generate the TB hoppings
 # /!\ Special case: format: [[intra-bottom, inter-bottom-top], [inter-top-bottom, intra-top]]
@@ -198,4 +201,4 @@ fill_hoppings(hoppings, inter_bottom_top,
               include_transpose=True)
 print('done inter')
     
-save_sparse_hoppings("wannier90_hr.dat", hoppings, len(coords))
+save_sparse_hoppings("m7-stcarr.dat", hoppings, len(coords))
