@@ -3,6 +3,7 @@ from math import sqrt
 import pymatgen as mg
 from pymatgen.io.vasp import Poscar
 import scipy
+from collections import deque
 
 from heterostructure import Heterostructure
 from sheet import Sheet
@@ -104,16 +105,14 @@ def indices_to_supercell(h, t1, t2, t3, origin=[0, 0, 0]):
     # Go back to cart coords to remove duplicates
     coords = unit_frac_coords @ frac2cart.transpose() - delta
 
-    print(f'len of coords before: {len(coords)}')
     coords, inverses = unique_coords(coords)
-    print(f'len of coords after: {len(coords)}')
     return coords, Rs, inverses
 
 # shift it so that the center of the two sheets is at 1/3 t3
 coords, Rs, js = indices_to_supercell(h, t1, t2, t3, origin=[0, 0, interlayer_dist/2 - t3[2]/2])
 
 print(len(coords), natoms)
-# assert(len(coords) == natoms)
+assert(len(coords) == natoms)
 
 # Save the POSCAR
 struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords, coords_are_cartesian=True)
@@ -125,5 +124,76 @@ xs = h.totalHamiltonian()
 intra_bottom, inter_bottom_top = xs[0]
 intra_top = xs[1][0]
 
-bottom_coords = get_positions(h, s=0)
-top_coords = get_positions(h, s=1)
+# Save the hoppings
+def save_sparse_hoppings(path, hoppings, num_wann, comment='Generated from stcarr\'s code'):
+    """Save the given hoppings in a file with the sparse hrdat format. 
+
+    Notes about the sparse hrdat format:
+    - the fourth line, the number of rpoints, must only count the R
+      points with at least one entry
+    - the R points must be sorted lexicographically (i.e. first (-1,
+      -1, 0), then (-1, 0, 0))
+    - index for i and j starts at 1 (but this functions assumes it
+      starts at 0 like in Python)
+
+    Arguments: 
+    path     -- target path for the hrdat file
+    hoppings -- (Ra, Rb, Rc) -> [(i, j, hr, hi)] dictionnary
+    num_wann -- number of Wannier functions per unit cell (i.e number
+                of sites)
+    comment  -- optional comment, first line of the file
+
+    """
+    nrpts = len([R for R in hoppings if len(hoppings[R]) != 0])
+    with open(path, 'w') as f:
+        num_lines = sum([len(hoppings[R]) for R in hoppings])
+        f.write(comment+'\n')
+        f.write(f'{num_lines}\n')
+        f.write(f'{num_wann}\n')
+        f.write(f'{nrpts}\n')
+        f.write(' '.join(nrpts * ['1']) + '\n')
+        for R in sorted(hoppings.keys()):
+            for i, j, hr, hi in hoppings[R]:
+                f.write(f'{int(R[0])} {int(R[1])} {int(R[2])} {int(i+1)} {int(j+1)} {hr} {hi}\n')
+
+def fill_hoppings(hoppings, hamiltonian, row_shift=0, col_shift=0, include_transpose=False):
+    """Fill the hoppings dictionary using the given hamiltonian sparse
+    matrix.
+
+    Arguments: 
+    hoppings          -- (Ra, Rb, Rc) -> [(i, j, hr, hi)] dictionnary
+    hamiltonian       -- (Nr, Nc) matrix
+    row_shift         -- shift to convert row idcs to global idcs
+    col_shift         -- shift to convert col idcs to global idcs
+    include_transpose -- if True also include the -R, j, i bond
+    """
+    rows, cols, vals = scipy.sparse.find(intra_bottom)
+    rows += row_shift
+    cols += col_shift
+    for r, c, v in zip(rows, cols, vals):
+        # skip if rows outside of the unit cell
+        R = Rs[r]
+        if (R != [0, 0, 0]).any():
+            continue
+        R, i, j = Rs[c],js[r], js[c]
+        R = (R[0], R[1], R[2]) # convert to tuple for key hash
+        hoppings.set_default(R, default=deque()).append((i, j, v, 0))
+        if include_transpose:
+            R = (-R[0], -R[1], -R[2])
+            hoppings.set_default(R, default=deque()).append((j, i, v, 0))
+
+hoppings = {}
+
+# bottom
+fill_hoppings(hoppings, intra_bottom)
+# top
+fill_hoppings(hoppings, intra_top,
+              row_shift=len(h.sheets[0].max_index),
+              col_shift=len(h.sheets[0].max_index))
+# intra
+fill_hoppings(hoppings, inter_bottom_top,
+              col_shift=len(h.sheets[0].max_index),
+              include_transpose=True)
+
+    
+save_sparse_hoppings("wannier90_hr.dat", hoppings, (coords))
