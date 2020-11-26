@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import numpy as np
 from math import sqrt
 import pymatgen as mg
@@ -13,7 +15,7 @@ from sheet import Sheet
 # Input parameters
 # -----------------------------------------------------------------------------
 
-m = 7 if len(sys.argv) <= 1 else sys.argv[1]
+m = 7 if len(sys.argv) <= 1 else int(sys.argv[1])
 poscar_path = 'stcarr.vasp' if len(sys.argv) <= 2 else sys.argv[2]
 hrdat_path = 'stcarr_hr.dat' if len(sys.argv) <= 3 else sys.argv[3]
 
