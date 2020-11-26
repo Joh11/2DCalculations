@@ -18,7 +18,7 @@ m = 7
 # -----------------------------------------------------------------------------
 
 # Generate the heterostructure
-N = 10 # TODO choose a big enough N
+N = 50 # TODO choose a big enough N
 
 a = 2.46
 interlayer_dist = 3.35
@@ -37,20 +37,43 @@ natoms_per_layer = 2 * (3 * m**2 + 3 * m + 1)
 natoms = 2 * natoms_per_layer
 
 s1 = Sheet([a1,a2,a3], ['C','C'], sites_A, [0], [-N,-N], [N,N], 'graphene')
-s2 = Sheet([a1,a2,a3], ['C','C'], sites_A, [0], [-N,-N], [N,N], 'graphene')
+s2 = Sheet([a1,a2,a3], ['C','C'], sites_B, [0], [-N,-N], [N,N], 'graphene')
 
 h = Heterostructure([s1, s2], [0, theta], [0, interlayer_dist])
 
 # Superlattice
-t1 = -(m+1) * a1 + (2*m+1) * (a2 - a1)
-t2 = (2*m+1) * a1 - m * (a2 - a1)
-t3 = interlayer_dist + 20 * np.array([0, 0, 1])
+t1 = -(m+1) * a1 + (2*m+1) * (a2)
+t2 = (2*m+1) * a1 - m * (a2)
+t3 = np.array([0, 0, interlayer_dist + 20])
 
 # Find the position of each one of these indices
 def get_positions(h, s):
     max_index = h.sheets[s].max_index
     grid_indices = [h.sheets[s].indexToGrid(k) for k in range(max_index)]
     return np.array([h.posAtomGrid(grid_index, s) for grid_index in grid_indices])
+
+def unique_coords(coords):
+    """Returns the coords without duplicates, along with the inverses
+    array"""
+    uniques = np.zeros_like(coords)
+    inverses = np.zeros(len(coords))
+    next_free = 0
+
+    # first step
+    uniques[0] = coords[0]
+    inverses[0] = 0
+    next_free += 1
+    
+    for i, c in enumerate(coords[1:], start=1):
+        dists = np.linalg.norm(uniques[:next_free] - c, axis=1)
+        j = np.argmin(dists)
+        if dists[j] > 1:
+            # append it
+            uniques[next_free] = c
+            next_free += 1
+        inverses[i] = j
+
+    return uniques[:next_free], inverses
 
 def indices_to_supercell(h, t1, t2, t3, origin=[0, 0, 0]):
     """Returns a list of all  inside the given supercell. 
@@ -77,11 +100,13 @@ def indices_to_supercell(h, t1, t2, t3, origin=[0, 0, 0]):
     frac_coords = coords @ cart2frac.transpose()
 
     Rs, unit_frac_coords = np.divmod(frac_coords, 1) # (k, 3), (k, 3)
-    
+
     # Go back to cart coords to remove duplicates
     coords = unit_frac_coords @ frac2cart.transpose() - delta
-    coords, inverses = np.unique(coords.round(decimals=1), return_inverse=True, axis=0)
-    
+
+    print(f'len of coords before: {len(coords)}')
+    coords, inverses = unique_coords(coords)
+    print(f'len of coords after: {len(coords)}')
     return coords, Rs, inverses
 
 # shift it so that the center of the two sheets is at 1/3 t3
@@ -91,7 +116,7 @@ print(len(coords), natoms)
 # assert(len(coords) == natoms)
 
 # Save the POSCAR
-struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords)
+struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords, coords_are_cartesian=True)
 Poscar(struct).write_file("test.vasp")
 
 # Generate the TB hoppings
