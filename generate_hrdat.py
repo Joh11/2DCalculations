@@ -13,13 +13,15 @@ from sheet import Sheet
 # Input parameters
 # -----------------------------------------------------------------------------
 
-m = 7 if len(sys.argv) != 2 else sys.argv[1]
+m = 7 if len(sys.argv) <= 1 else sys.argv[1]
+poscar_path = 'stcarr.vasp' if len(sys.argv) <= 2 else sys.argv[2]
+hrdat_path = 'stcarr_hr.dat' if len(sys.argv) <= 3 else sys.argv[3]
 
 # -----------------------------------------------------------------------------
 # Beginning of the script
 # -----------------------------------------------------------------------------
 
-print('Usage: ./generate_hrdat.py [m]')
+print('Usage: ./generate_hrdat.py [m] [poscar] [hrdat]')
 
 # Generate the heterostructure
 N = 50 # TODO choose a big enough N
@@ -119,7 +121,7 @@ assert(len(coords) == natoms)
 
 # Save the POSCAR
 struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords, coords_are_cartesian=True)
-Poscar(struct).write_file("m7-stcarr.vasp")
+Poscar(struct).write_file(poscar_path)
 
 # Generate the TB hoppings
 # /!\ Special case: format: [[intra-bottom, inter-bottom-top], [inter-top-bottom, intra-top]]
@@ -201,4 +203,4 @@ fill_hoppings(hoppings, inter_bottom_top,
               include_transpose=True)
 print('done inter')
     
-save_sparse_hoppings("m7-stcarr.dat", hoppings, len(coords))
+save_sparse_hoppings(hrdat_path, hoppings, len(coords))
