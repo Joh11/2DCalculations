@@ -119,10 +119,10 @@ struct = mg.Structure([t1, t2, t3], len(coords) * ['C'], coords, coords_are_cart
 Poscar(struct).write_file("test.vasp")
 
 # Generate the TB hoppings
-# /!\ Special case: format: [[intra-bottom, inter-bottom-top], [intra-top, intra-top-bottom]]
+# /!\ Special case: format: [[intra-bottom, inter-bottom-top], [inter-top-bottom, intra-top]]
 xs = h.totalHamiltonian()
 intra_bottom, inter_bottom_top = xs[0]
-intra_top = xs[1][0]
+intra_top = xs[1][1]
 
 # Save the hoppings
 def save_sparse_hoppings(path, hoppings, num_wann, comment='Generated from stcarr\'s code'):
@@ -167,7 +167,7 @@ def fill_hoppings(hoppings, hamiltonian, row_shift=0, col_shift=0, include_trans
     col_shift         -- shift to convert col idcs to global idcs
     include_transpose -- if True also include the -R, j, i bond
     """
-    rows, cols, vals = scipy.sparse.find(intra_bottom)
+    rows, cols, vals = scipy.sparse.find(hamiltonian)
     rows += row_shift
     cols += col_shift
     for r, c, v in zip(rows, cols, vals):
@@ -177,23 +177,25 @@ def fill_hoppings(hoppings, hamiltonian, row_shift=0, col_shift=0, include_trans
             continue
         R, i, j = Rs[c],js[r], js[c]
         R = (R[0], R[1], R[2]) # convert to tuple for key hash
-        hoppings.set_default(R, default=deque()).append((i, j, v, 0))
+        hoppings.setdefault(R, deque()).append((i, j, v, 0))
         if include_transpose:
             R = (-R[0], -R[1], -R[2])
-            hoppings.set_default(R, default=deque()).append((j, i, v, 0))
+            hoppings.setdefault(R, deque()).append((j, i, v, 0))
 
 hoppings = {}
 
 # bottom
 fill_hoppings(hoppings, intra_bottom)
+print('done bottom')
 # top
 fill_hoppings(hoppings, intra_top,
-              row_shift=len(h.sheets[0].max_index),
-              col_shift=len(h.sheets[0].max_index))
+              row_shift=h.sheets[0].max_index,
+              col_shift=h.sheets[0].max_index)
+print('done top')
 # intra
 fill_hoppings(hoppings, inter_bottom_top,
-              col_shift=len(h.sheets[0].max_index),
+              col_shift=h.sheets[0].max_index,
               include_transpose=True)
-
+print('done inter')
     
-save_sparse_hoppings("wannier90_hr.dat", hoppings, (coords))
+save_sparse_hoppings("wannier90_hr.dat", hoppings, len(coords))
