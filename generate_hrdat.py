@@ -112,12 +112,12 @@ def indices_to_supercell(h, t1, t2, t3, origin=[0, 0, 0]):
     Rs, unit_frac_coords = np.divmod(frac_coords, 1) # (k, 3), (k, 3)
 
     # Go back to cart coords to remove duplicates
-    coords = unit_frac_coords @ frac2cart.transpose() - delta
+    coords = unit_frac_coords @ frac2cart.transpose()
 
     coords, inverses = unique_coords(coords)
     return coords, Rs, inverses
 
-# shift it so that the center of the two sheets is at 1/3 t3
+# shift it so that the center of the two sheets is at 1/2 t3
 coords, Rs, js = indices_to_supercell(h, t1, t2, t3, origin=[0, 0, interlayer_dist/2 - t3[2]/2])
 
 print(len(coords), natoms)
