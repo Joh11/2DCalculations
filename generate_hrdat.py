@@ -28,7 +28,7 @@ hrcut = 1e-5
 print('Usage: ./generate_hrdat.py [m] [poscar] [hrdat]')
 
 # Generate the heterostructure
-N = 50 # TODO choose a big enough N
+N = 70 # TODO choose a big enough N
 
 a = 2.46
 interlayer_dist = 3.35
