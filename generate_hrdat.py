@@ -19,6 +19,8 @@ m = 7 if len(sys.argv) <= 1 else int(sys.argv[1])
 poscar_path = 'stcarr.vasp' if len(sys.argv) <= 2 else sys.argv[2]
 hrdat_path = 'stcarr_hr.dat' if len(sys.argv) <= 3 else sys.argv[3]
 
+hrcut = 1e-5
+
 # -----------------------------------------------------------------------------
 # Beginning of the script
 # -----------------------------------------------------------------------------
@@ -182,6 +184,8 @@ def fill_hoppings(hoppings, hamiltonian, row_shift=0, col_shift=0, include_trans
         R = Rs[r]
         if (R != [0, 0, 0]).any():
             continue
+        if np.abs(v) < hrcut:
+            continue # skip hoppings too small
         R, i, j = Rs[c],js[r], js[c]
         R = (R[0], R[1], R[2]) # convert to tuple for key hash
         hoppings.setdefault(R, deque()).append((i, j, v, 0))
