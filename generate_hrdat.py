@@ -60,7 +60,7 @@ def get_positions(h, s):
     grid_indices = [h.sheets[s].indexToGrid(k) for k in range(max_index)]
     return np.array([h.posAtomGrid(grid_index, s) for grid_index in grid_indices])
 
-def unique_coords(coords):
+def unique_coords(coords, tol=1e-2):
     """Returns the coords without duplicates, along with the inverses
     array"""
     uniques = np.zeros_like(coords)
@@ -75,7 +75,7 @@ def unique_coords(coords):
     for i, c in enumerate(coords[1:], start=1):
         dists = np.linalg.norm(uniques[:next_free] - c, axis=1)
         j = np.argmin(dists)
-        if dists[j] > 1:
+        if dists[j] > tol:
             # append it
             uniques[next_free] = c
             next_free += 1
