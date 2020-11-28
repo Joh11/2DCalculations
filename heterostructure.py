@@ -109,7 +109,7 @@ class Heterostructure:
         sheet1 = self.sheets[s1]
         sheet2 = self.sheets[s2]
         
-        searchsize = 4
+        searchsize = 10
         
         print('Calculating interlayer H...')
         H = sparse.lil_matrix((sheet1.max_index,sheet2.max_index))
